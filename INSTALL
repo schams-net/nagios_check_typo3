@@ -1,0 +1,71 @@
+Nagios(R) TYPO3 Monitoring
+Michael Schams - http://schams.net
+
+
+INSTALLATION:
+
+Install Nagios(R) as documented. We assume your Nagios(R) server runs, is
+configured and tested. We also assume all Nagios(R) plugins are located in:
+
+	/usr/local/nagios/libexec/
+
+Copy file "check_typo3.sh" to /usr/local/nagios/libexec/
+Copy file "check_typo3.cfg" to /usr/local/nagios/etc/
+
+Ensure, file permissions are correct, for example (depending on your individual
+system):
+
+	chown nagios /usr/local/nagios/libexec/check_typo3.sh
+	chmod 755 /usr/local/nagios/libexec/check_typo3.sh
+	chmod 644 /usr/local/nagios/etc/check_typo3.cfg
+
+Install and set up the TYPO3 extension on the TYPO3 server(s). We assume that
+you do *NOT* install the extension as a TYPO3 frontend extension but you use the
+recommended "eID" method. This is the default way (using a frontend extension is
+deprecated). You will find a detailed documentation about the installation
+process in the extension package ("doc/manual.sxw") and online:
+
+	http://schams.net/nagios
+
+As the next step, integrate the "TYPO3 check" in your Nagios(R) configuration.
+For example:
+
+--- cut here ---
+define command {
+  command_name            check_typo3
+  command_line            $USER1$/check_typo3.sh $ARG1$
+}
+
+define service {
+  use                     generic-service
+  host_name               my-typo3-host
+  service_description     TYPO3
+  check_command           check_typo3!--hostname my-typo3-server.org
+  normal_check_interval   60
+  retry_check_interval    10
+  notifications_enabled   1
+}
+--- cut here ---
+
+Note: this is an example only! Change "my-typo3-server.org" accordingly.
+
+The plugin supports a lot of arguments to tweak the configuration and achieve a
+great level of sophistication. Find a complete list of options in the
+CONFIGURATION file.
+
+Reload (or restart) the Nagios(R) server and check if everything works as
+expected or the server reports an error. A successful reload should look like:
+
+	Running configuration check...done.
+	Reloading nagios configuration...done
+
+If the Nagios(R) server reports a configuration error (see example below), you
+made a mistake in one of the configuration files. In this case, you should check
+your Nagios(R) configuration.
+
+	Running configuration check... CONFIG ERROR!
+	Reload aborted. Check your Nagios configuration.
+
+Assuming the reload/restart of the Nagios(R) server was successful, continue
+with your individual configuration as described in file CONFIGURATION.
+

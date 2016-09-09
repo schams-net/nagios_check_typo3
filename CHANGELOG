@@ -1,0 +1,42 @@
+2012-06-01 Michael Schams <schams.net>
+
+	[TASK] Nagios add-on "Check TYPO3 CMS" version 1.0.0.2 submitted for approval at "Nagios Exchange"
+
+2012-05-25 Michael Schams <schams.net>
+
+	[TASK] documentation updated (README, INSTALL and CONFIGURATION)
+
+2012-04-14 Michael Schams <schams.net>
+
+	[TASK] new check implemented: disk space used ("disk usage")
+	[TASK] new check implemented: TYPO3 deprecation log
+	[TASK] better support for eID method calls (using eID is the default behaviour now)
+	[TASK] arguments -pid and --pageid declared as deprecated but still supported
+	[TASK] code for encryption key removed (was never implemented)
+	[TASK] directory structure of software package updated
+
+2011-04-07 Michael Schams <schams.net>
+
+	[TASK] more flexible file name of configuration file
+	[TASK] Nagios add-on "Check TYPO3 CMS" version 1.0.0.1 submitted for approval at "Nagios Exchange"
+
+2011-04-01 Michael Schams <schams.net>
+
+	[TASK] Nagios add-on "Check TYPO3 CMS" version 1.0.0.0 submitted for approval at "Nagios Exchange"
+
+2011-04-05 Nagios Exchange <noreply@nagios.com>
+
+	[TASK] Nagios add-on "Check TYPO3 CMS" has been approved and officially published
+
+2011-04-07 Michael Schams <schams.net>
+
+	[BUGFIX] Error: unable to read configuration file
+	[BUGFIX] Wrong extension key for TYPO3-SA-2011-002 in configuration file
+	[TASK] TYPO3 security bulletin TYPO3-SA-2011-003 added in configuration file
+	[TASK] configuration file updated to version 1.0.0.1
+
+2011-09-07 Michael Schams <schams.net>
+
+	[TASK] lines in text files trimmed to 80 characters of length
+	[BUGFIX] typos corrected in help text (--help, see: print_usage())
+

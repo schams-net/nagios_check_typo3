@@ -1,0 +1,46 @@
+Nagios(R) TYPO3 Monitoring
+Michael Schams - http://schams.net
+
+
+DESCRIPTION:
+
+Nagios(R) is the industry standard in open source server/service/network
+monitoring. This plugin for Nagios(R) reads and parses information about the
+TYPO3 instance and reports the status to the Nagios(R) core.
+
+Depending to the configuration (the plugin and Nagios(R) itself), Nagios(R)
+detects a specific state (warning or critical) and runs its notification or
+event handling procedures.
+
+In short words: this plugin in combination with the TYPO3 extension allows
+system administrators/managers to detect things such as outdated/insecure TYPO3
+extensions, outdated/insecure TYPO3 core installations, incompatible PHP
+versions, etc.
+
+Read the full documentation at: http://schams.net/nagios
+
+
+AUTHOR:
+
+Michael Schams
+http://schams.net
+
+
+COPYRIGHT NOTICE:
+
+(c) 2010-2012 Michael Schams <schams.net>, all rights reserved
+
+This script is free software;
+you can redistribute it and/or modify it under the terms of the
+GNU General Public License version 2 as published by the Free Software
+Foundation.
+
+The GNU General Public License can be found at:
+http://www.gnu.org/copyleft/gpl.html
+
+This script is distributed in the hope that it will be useful, but WITHOUT ANY
+WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
+PARTICULAR PURPOSE. See the GNU General Public License for more details.
+
+This copyright notice MUST APPEAR in all copies of the script!
+
