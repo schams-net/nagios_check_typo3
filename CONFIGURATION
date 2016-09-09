@@ -121,10 +121,10 @@ Mandatory arguments:
        Full qualified host name of TYPO3 server (e.g. "typo3.org")
        A port can be appended if required (e.g.: typo3.org:8080)
        This argument is also used to determine the request to the TYPO3 server but can be
-       overwritten with the -r (or --resource) argument.
+       overwritten by using the -r (or --resource) argument.
 
        The output of the TYPO3 Nagios extension is expected at:
-       "http://<fqhostname>/?eID=nagios"
+       "http://<fqhostname>/index.php?eID=nagios"
 
 Optional arguments:
   -c <configfile>, --config <configfile>
@@ -144,18 +144,25 @@ Optional arguments:
 
   -r <uri>, --resource <uri>
        URI (Uniform Resource Identifier) of TYPO3 server's Nagios extension output.
-       Example: "-r http://typo3.org/?eID=nagios"
+       Example: "-r http://typo3.org/index.php?eID=nagios"
        Note that this argument is optional. The Nagios plugin uses --hostname (or -H) to
        determine the URI of the TYPO3 server. If <uri> starts with "/", <fqhostname> is
        prepended. If you use this argument, it overwrites arguments -pid and --pageid
 
+  -I <ip-address>, --ipaddress <ip-address>
+       IPv4 address of the TYPO3 server (e.g. "123.45.67.89")
+       If this argument is used, the hostname (argument -H or --hostname) is sent as
+       "Host:" in the HTTP header of the request.
+
   -duw <limit>, --diskusagewarning <limit>
        Warning level for disk usage (should be less than -duc).
-       Value can be a human readable integer, e.g. 512M (allowed units are k,M,G,T or P)
+       Value MUST have one of these units appended: k, M, G, T or P.
+       A valid value for this argument would be "512M" for example.
 
   -duc <limit>, --diskusagecritical <limit>
        Critical level for disk usage.
-       Value can be a human readable integer, e.g. 512M (allowed units are k,M,G,T or P)
+       Value MUST have one of these units appended: k, M, G, T or P.
+       A valid value for this argument would be "512M" for example.
 
   --deprecationlog-action <action>
        One of the following actions, if an enabled deprecation log has been detected:

@@ -8,7 +8,7 @@
 # TYPO3 Extension Repository: http://typo3.org/extensions/repository
 # Nagios: http://nagios.org/
 #
-# (c) 2010-2012 Michael Schams <typo3@schams.net>
+# (c) 2010-2013 Michael Schams - http://schams.net
 # All rights reserved
 #
 # This script is free software; you can redistribute it and/or modify
@@ -28,8 +28,8 @@
 # Please see TYPO3 and Nagios licenses.
 #
 # ------------------------------------------------------------------------------
-# Revision 1.0.0.2 (see variable REVISION below)
-# Date: 01/June/2012
+# Revision 1.0.0.3 (see variable REVISION below)
+# Date: 10/May/2013
 #
 # This version supports the following checks:
 #   - PHP version
@@ -39,6 +39,7 @@
 #   - status of deprecation log
 #
 # *NOT* implemented yet:
+#   - customised user agent used for HTTP calls
 #   - check basic database details
 #   - check status of donation notice popup
 #   - timestamp and timezone (TYPO3 server settings)
@@ -73,10 +74,11 @@ SEARCH_RESULT=""
 STATUS=""
 
 PROGPATH=`echo $0 | sed -e 's,[\\/][^\\/][^\\/]*$,,'`
-REVISION="1.0.0.2"
+REVISION="1.0.0.3"
 
 # Set default values
 FQHOSTNAME=""
+IPADDRESS=""
 TIMEOUT="5"
 WGET_ARGUMENTS=""
 HTTPUSER=""
@@ -87,8 +89,10 @@ PAGEID=""
 
 DISKUSAGEWARNING=""
 DISKUSAGECRITICAL=""
+SERVER_MESSAGE=""
 
 DEPRECATIONLOG_ACTION="warning"
+SERVER_MESSAGE_ACTION="show"
 
 # USERAGENT: does not work :-(
 USERAGENT="Nagios TYPO3 Monitor Plugin version $REVISION (wget)"
@@ -126,7 +130,7 @@ print_usage() {
 	echo "  $SCRIPTNAME -H <fqhostname>"
 	echo "       [ -r <uri> | -pid <pageid> ]"
 	echo "       [ -c <configfile> ]"
-	echo "       [ -t <timeout> ] [ -u <username>] ] [ -p <password> ]"
+	echo "       [ -t <timeout> ] [ -u <username>] [ -p <password> ] [ -r <uri> ] [ -I <ip-address> ]"
 	echo "       [ -duw <limit> ] [ -duc <limit> ]"
 	echo "       [ --deprecationlog-action ignore|warning|critical ]"
 	echo
@@ -145,10 +149,10 @@ print_usage() {
 	echo "       Full qualified host name of TYPO3 server (e.g. \"typo3.org\")"
 	echo "       A port can be appended if required (e.g.: typo3.org:8080)"
 	echo "       This argument is also used to determine the request to the TYPO3 server but can be"
-	echo "       overwritten with the -r (or --resource) argument."
+	echo "       overwritten by using the -r (or --resource) argument."
 	echo
     echo "       The output of the TYPO3 Nagios extension is expected at:"
-    echo "       \"http://<fqhostname>/?eID=nagios\""
+    echo "       \"http://<fqhostname>/index.php?eID=nagios\""
 	echo
 	echo "Optional arguments:"
 	echo "  -c <configfile>, --config <configfile>"
@@ -168,18 +172,25 @@ print_usage() {
     echo
 	echo "  -r <uri>, --resource <uri>"
 	echo "       URI (Uniform Resource Identifier) of TYPO3 server's Nagios extension output."
-	echo "       Example: \"-r http://typo3.org/?eID=nagios\""
+	echo "       Example: \"-r http://typo3.org/index.php?eID=nagios\""
 	echo "       Note that this argument is optional. The Nagios plugin uses --hostname (or -H) to"
 	echo "       determine the URI of the TYPO3 server. If <uri> starts with \"/\", <fqhostname> is"
 	echo "       prepended. If you use this argument, it overwrites arguments -pid and --pageid"
     echo
+	echo "  -I <ip-address>, --ipaddress <ip-address>"
+	echo "       IPv4 address of the TYPO3 server (e.g. \"123.45.67.89\")"
+	echo "       If this argument is used, the hostname (argument -H or --hostname) is sent as"
+    echo "       \"Host:\" in the HTTP header of the request."
+    echo
 	echo "  -duw <limit>, --diskusagewarning <limit>"
 	echo "       Warning level for disk usage (should be less than -duc)."
-	echo "       Value can be a human readable integer, e.g. 512M (allowed units are k,M,G,T or P)"
+	echo "       Value MUST have one of these units appended: k, M, G, T or P."
+	echo "       A valid value for this argument would be \"512M\" for example."
     echo
 	echo "  -duc <limit>, --diskusagecritical <limit>"
 	echo "       Critical level for disk usage."
-	echo "       Value can be a human readable integer, e.g. 512M (allowed units are k,M,G,T or P)"
+	echo "       Value MUST have one of these units appended: k, M, G, T or P."
+	echo "       A valid value for this argument would be \"512M\" for example."
 	echo
 	echo "  --deprecationlog-action <action>"
 	echo "       One of the following actions, if an enabled deprecation log has been detected:"
@@ -187,6 +198,13 @@ print_usage() {
 	echo "       \"warning\"   generate a warning condition in Nagios"
 	echo "       \"critical\"  generate a critical condition in Nagios"
 	echo "       Default: $DEPRECATIONLOG_ACTION"
+	echo
+	echo "  --server-messages-action <action>"
+	echo "       What should the check script do, if TYPO3 server sends an additional message in"
+	echo "       the output:"
+	echo "       \"ignore\"    do nothing and do not show messages (not recommended)"
+	echo "       \"show\"      show messages if they occur (they can be useful)"
+	echo "       Default: $SERVER_MESSAGE_ACTION"
 	echo
 	echo "Deprecated (but still supported) arguments:"
 	echo "  -pid <pageid>, --pageid <pageid>"
@@ -260,14 +278,15 @@ check_config_extensions() {
 
 # function human_readable_to_integer()
 #
-# @param HR_VALUE: value in human readable style (e.g. 500M)
+# @param HR_VALUE: value in human readable style (e.g. 128M)
+# @return HR_VALUE: value in non-human readable format (e.g. 129552384)
 function human_readable_to_integer {
 
 	HR_VALUE="$1"
 	HR_RESULT="ok"
 	
-	if [ "`echo $HR_VALUE | egrep ^[[:digit:]]+$`" = "" ]; then
-		exit
+	if [ "`echo $HR_VALUE | egrep ^[[:digit:]]+[kMGTP]$`" = "" ]; then
+    	HR_RESULT="Unkown value/format: $HR_VALUE"
 	fi
 
 	local __hrKey=${HR_VALUE: -1}
@@ -276,42 +295,46 @@ function human_readable_to_integer {
 
 	if [ "`echo $__value | egrep ^[[:digit:]]+$`" = "" ]; then
     	HR_RESULT="Unkown value/format: $HR_VALUE"
-    	exit
   	fi
 
-	case "$__hrKey" in
-		k)
-			__multiplicator=1024
-			shift
-			;;
-		M)
-			__multiplicator=1048576
-			shift
-			;;
-		G)
-			__multiplicator=1073741824
-			shift
-			;;
-		T)
-			__multiplicator=1099511627776
-			shift
-			;;
-		P)
-			__multiplicator=1125899906842620
-			shift
-			;;
-		*)
-			HR_RESULT="Unknown unit in: $HR_VALUE"
-			exit
-			;;
-	esac
+	if [ "$HR_RESULT" = "ok" ]; then
+		case "$__hrKey" in
+			k)
+				__multiplicator=1024
+				shift
+				;;
+			M)
+				__multiplicator=1048576
+				shift
+				;;
+			G)
+				__multiplicator=1073741824
+				shift
+				;;
+			T)
+				__multiplicator=1099511627776
+				shift
+				;;
+			P)
+				__multiplicator=1125899906842620
+				shift
+				;;
+			*)
+				HR_RESULT="Unknown unit in: $HR_VALUE"
+				exit
+				;;
+		esac
 
-	HR_VALUE=$[__value*__multiplicator]
+		HR_VALUE=$[__value*__multiplicator]
+	else
+		HR_VALUE=0
+	fi
 }
 
 # function integer_to_human_readable()
 #
-# @param VALUE: value in non-human readable style (e.g. 129552384)
+# @param VALUE: value in non-human readable format (e.g. 129552384)
+# @return VALUE: value in human readable format (e.g. 128M)
 function integer_to_human_readable {
 	VALUE=`echo "$1" | awk '{x=$1
 	if (x<0) {n="-"; x=-x} else n=""
@@ -370,6 +393,20 @@ while test -n "$1"; do
 			FQHOSTNAME="$2"
 			shift
 		;;
+		-I)
+			TEMP=`echo "$2" | egrep "^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$"`
+			if [ ! "$TEMP" = "" ]; then
+				IPADDRESS="$2"
+			fi
+			shift
+		;;
+		--ipaddress)
+			TEMP=`echo "$2" | egrep "^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$"`
+			if [ ! "$TEMP" = "" ]; then
+				IPADDRESS="$2"
+			fi
+			shift
+		;;
 		--config)
 			CONFIGFILE="$2"
 			shift
@@ -403,12 +440,18 @@ while test -n "$1"; do
 			shift
 		;;
 		--pageid)
-			PAGEID="$2"
-			shift
+			TEMP=`echo "$2" | egrep "^[0-9]{1,}$"`
+			if [ ! "$TEMP" = "" ]; then
+				PAGEID="$2"
+			fi
+            shift
 		;;
 		-pid)
-			PAGEID="$2"
-			shift
+			TEMP=`echo "$2" | egrep "^[0-9]{1,}$"`
+			if [ ! "$TEMP" = "" ]; then
+				PAGEID="$2"
+			fi
+            shift
 		;;
 		-r)
 			RESOURCE="$2"
@@ -419,6 +462,14 @@ while test -n "$1"; do
 			shift
 		;;
 		--duw)
+			# *DEPRECATED* please use argument -duw instead (one dash only, see --help)
+			TEMP=`echo "$2" | egrep "^[0-9]{1,}[kMGTP]{0,1}$"`
+			if [ ! "$TEMP" = "" ]; then
+				DISKUSAGEWARNING="$2"
+			fi
+            shift
+        ;;
+		-duw)
 			TEMP=`echo "$2" | egrep "^[0-9]{1,}[kMGTP]{0,1}$"`
 			if [ ! "$TEMP" = "" ]; then
 				DISKUSAGEWARNING="$2"
@@ -433,6 +484,14 @@ while test -n "$1"; do
             shift
         ;;
         --duc)
+			# *DEPRECATED* please use argument -duc instead (one dash only, see --help)
+			TEMP=`echo "$2" | egrep "^[0-9]{1,}[kMGTP]{0,1}$"`
+			if [ ! "$TEMP" = "" ]; then
+				DISKUSAGECRITICAL="$2"
+			fi
+			shift
+		;;
+        -duc)
 			TEMP=`echo "$2" | egrep "^[0-9]{1,}[kMGTP]{0,1}$"`
 			if [ ! "$TEMP" = "" ]; then
 				DISKUSAGECRITICAL="$2"
@@ -450,6 +509,13 @@ while test -n "$1"; do
 			TEMP=`echo "$2" | egrep "^(ignore|warning|critical)$"`
 			if [ ! "$TEMP" = "" ]; then
 				DEPRECATIONLOG_ACTION="$2"
+			fi
+			shift
+		;;
+		--server-messages-action)
+			TEMP=`echo "$2" | egrep "^(show|ignore)$"`
+			if [ ! "$TEMP" = "" ]; then
+				SERVER_MESSAGE_ACTION="$2"
 			fi
 			shift
 		;;
@@ -491,8 +557,6 @@ if [ ! "$DISKUSAGEWARNING" = "" ] || [ ! "$DISKUSAGECRITICAL" = "" ]; then
 			echo "Error: invalid value(s) for disk usage check"
 			exit $STATE_UNKNOWN
 		else
-			DISKUSAGEWARNING=0
-			DISKUSAGECRITICAL=0
 			if [ $INDEX -eq 0 ]; then
 				DISKUSAGEWARNING=$HR_VALUE
 			elif [ $INDEX -eq 1 ]; then
@@ -500,6 +564,14 @@ if [ ! "$DISKUSAGEWARNING" = "" ] || [ ! "$DISKUSAGECRITICAL" = "" ]; then
 			fi			
 		fi
 	done
+
+	# check, if values seem to be valid - otherwise set to "0"
+	if [ "`echo $DISKUSAGEWARNING | egrep ^[[:digit:]]+$`" = "" ]; then
+		DISKUSAGEWARNING=0
+	fi
+	if [ "`echo $DISKUSAGECRITICAL | egrep ^[[:digit:]]+$`" = "" ]; then
+		DISKUSAGECRITICAL=0
+	fi
 fi
 
 # read minimal data from existing config file
@@ -516,16 +588,22 @@ if [ "$RESOURCE" = "" -a ! "$PAGEID" = "" ]; then
 	if [ ! "$TEMP" = "" ]; then
 		RESOURCE="/index.php?id=$PAGEID"
 	else
-		RESOURCE="/?eID=nagios"
+		RESOURCE="/index.php?eID=nagios"
 	fi
 elif [ "$RESOURCE" = "" ]; then
-	RESOURCE="/?eID=nagios"
+	RESOURCE="/index.php?eID=nagios"
 fi
 
 # ensure, <fqhostname> and <resource> is valid
 TEMP=`echo "$RESOURCE" | egrep "^\/.*"`
 if [ ! "$TEMP" = "" ]; then
-	WGET_RESOURCE="$HTTPMETHOD://$FQHOSTNAME""$RESOURCE"
+	if [ ! "$IPADDRESS" = "" ]; then
+		WGET_RESOURCE="$HTTPMETHOD://$IPADDRESS$RESOURCE"
+		#WGET_ARGUMENTS="$WGET_ARGUMENTS --header=\"Host: $FQHOSTNAME\""
+		WGET_ARGUMENTS="$WGET_ARGUMENTS --header=Host:$FQHOSTNAME"
+	else
+		WGET_RESOURCE="$HTTPMETHOD://$FQHOSTNAME$RESOURCE"
+	fi
 else
 	TEMP=`echo "$RESOURCE" | egrep "^http:\/\/.*"`
 	if [ ! "$TEMP" = "" ]; then
@@ -541,7 +619,7 @@ SERVER_TYPE="TYPO3 server"
 
 # initiate request to TYPO3 server
 TEMPFILE=`mktemp`
-COMMAND="wget --quiet --save-headers --timeout $TIMEOUT --output-document - $HTTPUSER $HTTPPASSWORD $USERAGENT $WGET_RESOURCE"
+COMMAND="wget --quiet --save-headers --timeout $TIMEOUT $WGET_ARGUMENTS --output-document - $HTTPUSER $HTTPPASSWORD $USERAGENT $WGET_RESOURCE"
 $COMMAND > $TEMPFILE 2>&1
 WGET_RETURNCODE=$?
 
@@ -573,6 +651,10 @@ if [ -s "$CONFIGFILE" ]; then
 	# read data from configuration file
 	# (better read file once and process data in memory instead of repeated file access)
 	CONFIGURATION=`egrep '^[^#]' $CONFIGFILE`
+
+# *TODO* skip HTTP header lines:
+# They do not mess up the result, as longs as they do not match with one of the keywords (see $KEY).
+# In a bid to make the script more stable and sustainable, it is better to ignore the header lines.
 
 	# filter data sent by TYPO3 server (and remove unnecessary lines such as comments, etc.)
 	DATA=`egrep '^[A-Z0-9]{3,}:.{1,}' $TEMPFILE | egrep '[^ ]'`
@@ -688,11 +770,17 @@ if [ -s "$CONFIGFILE" ]; then
 					VALUE=`echo "$ELEMENT" | cut -d ":" -f 2`
 					if [ $DISKUSAGECRITICAL -gt 0 -a $VALUE -ge $DISKUSAGECRITICAL ]; then
 						integer_to_human_readable $VALUE
-						MESSAGE_CRITICAL="$MESSAGE_CRITICAL,disk usage $VALUE/$DISKUSAGECRITICAL"
+						ACTUAL_DISKUSAGE=$VALUE
+						integer_to_human_readable $DISKUSAGECRITICAL
+						DISKUSAGECRITICAL=$VALUE
+						MESSAGE_CRITICAL="$MESSAGE_CRITICAL,disk usage $ACTUAL_DISKUSAGE/$DISKUSAGECRITICAL"
 						STATUS="$STATUS,critical"
 					elif [ $DISKUSAGEWARNING -gt 0 -a $VALUE -ge $DISKUSAGEWARNING ]; then
 						integer_to_human_readable $VALUE
-						MESSAGE_WARNING="$MESSAGE_WARNING,disk usage $VALUE/$DISKUSAGEWARNING"
+						ACTUAL_DISKUSAGE=$VALUE
+						integer_to_human_readable $DISKUSAGEWARNING
+						DISKUSAGEWARNING=$VALUE
+						MESSAGE_WARNING="$MESSAGE_WARNING,disk usage $ACTUAL_DISKUSAGE/$DISKUSAGEWARNING"
 						STATUS="$STATUS,warning"
 					fi
 				fi
@@ -705,6 +793,12 @@ if [ -s "$CONFIGFILE" ]; then
 				elif [ "$VALUE" = "enabled" ] && [ "$DEPRECATIONLOG_ACTION" = "critical" ]; then
 					MESSAGE_WARNING="deprecation log enabled"
 					STATUS="$STATUS,critical"
+				fi
+			;;
+			"MESSAGE")
+				VALUE=`echo "$ELEMENT" | cut -d ":" -f 2`
+				if [ ! "$VALUE" = "" ] && [ "$SERVER_MESSAGE_ACTION" = "show" ]; then
+					SERVER_MESSAGE=$VALUE
 				fi
 			;;
 			*)
@@ -760,9 +854,22 @@ if [ "$STATUS" = "OK" ]; then
 	STATUS="$MESSAGE_VERSION OK"
 fi
 
+# no keywords such as "TYPO3", "PHP", "EXT", etc. found
+if [ "$TEMP" = "" ]; then
+	STATUS="UNKNOWN:"
+	if [ ! "$SERVER_MESSAGE" = "" ]; then
+		MESSAGE_UNKNOWN="$SERVER_MESSAGE"
+		SERVER_MESSAGE=""
+	else
+		MESSAGE_UNKNOWN="no valid output from TYPO3 server (check extension and its configuration)"
+	fi
+	RETURNCODE=$STATE_UNKNOWN
+fi
+
 # post-process $MESSAGE
 MESSAGE="$MESSAGE_CRITICAL,$MESSAGE_WARNING,$MESSAGE_UNKNOWN"
 MESSAGE=`echo "$MESSAGE" | sed 's/^[,]*//g' | sed 's/[,]*$//g' | sed 's/,\{2,\}/,/g'`
+MESSAGE="$MESSAGE $SERVER_MESSAGE"
 
 # Pass further explanations to Nagios and exit with approriate returncode
 echo "TYPO3 $STATUS $MESSAGE" | sed 's/ \{1,\}/ /g'
