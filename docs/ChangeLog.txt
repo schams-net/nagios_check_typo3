@@ -1,3 +1,9 @@
+2016-09-09 Michael Schams <schams.net>
+
+	[TASK] allow extension list with and without keyword "version" between extension key and name
+	[TASK] documentation files converted into Markdown and moved into separate folder "docs/"
+	[TASK] Nagios add-on "Check TYPO3 CMS" version 1.0.0.4 submitted for approval at "Nagios Exchange"
+
 2013-05-10 Michael Schams <schams.net>
 
 	[TASK] Nagios add-on "Check TYPO3 CMS" version 1.0.0.3 submitted for approval at "Nagios Exchange"

@@ -4,11 +4,11 @@
 # Requires TYPO3 Extension "nagios" installed and configured on the
 # TYPO3 server and a configuration file of course.
 #
-# Read the full documentation at: http://schams.net/nagios
+# Read the full documentation at: https://schams.net/nagios
 # TYPO3 Extension Repository: http://typo3.org/extensions/repository
 # Nagios: http://nagios.org/
 #
-# (c) 2010-2013 Michael Schams - http://schams.net
+# (c) 2010-2016 Michael Schams <schams.net>
 # All rights reserved
 #
 # This script is free software; you can redistribute it and/or modify
@@ -28,8 +28,8 @@
 # Please see TYPO3 and Nagios licenses.
 #
 # ------------------------------------------------------------------------------
-# Revision 1.0.0.3 (see variable REVISION below)
-# Date: 10/May/2013
+# Revision 1.0.0.4 (see variable REVISION below)
+# Date: 09/Sep/2016
 #
 # This version supports the following checks:
 #   - PHP version
@@ -74,7 +74,7 @@ SEARCH_RESULT=""
 STATUS=""
 
 PROGPATH=`echo $0 | sed -e 's,[\\/][^\\/][^\\/]*$,,'`
-REVISION="1.0.0.3"
+REVISION="1.0.0.4"
 
 # Set default values
 FQHOSTNAME=""
@@ -116,6 +116,10 @@ if [ -r $PROGPATH/$CONFIGFILE ]; then
 	CONFIGFILE="$PROGPATH/$CONFIGFILE"
 elif [ -r $NAGIOS_PATH/etc/$CONFIGFILE ]; then
 	CONFIGFILE="$NAGIOS_PATH/etc/$CONFIGFILE"
+elif [ -r $PROGPATH/../$CONFIGFILE ]; then
+	CONFIGFILE="$PROGPATH/../$CONFIGFILE"
+elif [ -r $NAGIOS_PATH/$CONFIGFILE ]; then
+	CONFIGFILE="$NAGIOS_PATH/$CONFIGFILE"
 else
 	echo 'Error: unable to read configuration file!'
 	exit $STATE_UNKNOWN
@@ -740,6 +744,15 @@ if [ -s "$CONFIGFILE" ]; then
 				EXTENSION_KEY=`echo "$VALUE" | cut -d "-" -f 1`
 				KEYWORD=`echo "$VALUE" | cut -d "-" -f 2`
 				VERSION=`echo "$VALUE" | cut -d "-" -f 3`
+
+				# allow extension list with and without keyword "version" between extension key and name
+				# see https://github.com/schams-net/nagios/issues/6 for details
+				TEMP=`echo "$KEYWORD" | egrep '^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$'`
+				if [ ! "$TEMP" = "" -a "$VERSION" = "" ]; then
+					VERSION="$KEYWORD"
+					KEYWORD="version"
+				fi
+
 				if [ "$KEYWORD" = "version" ]; then
 
 					# Extension version is always MAJOR.MINOR.REVISION (xxx.yyy.zzz, e.g. "1.2.3")
