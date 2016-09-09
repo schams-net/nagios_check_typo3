@@ -29,8 +29,8 @@
 # Please see TYPO3 and Nagios licenses.
 #
 # ------------------------------------------------------------------------------
-# Revision 1.0.0.0 (see variable REVISION below)
-# Date: 01/Apr/2011
+# Revision 1.0.0.1 (see variable REVISION below)
+# Date: 07/Apr/2011
 #
 # This version supports the following checks:
 #   - PHP version
@@ -62,6 +62,7 @@ done
 
 NAGIOS_PATH="/usr/lib/nagios"
 SCRIPTNAME=`basename $0`
+CONFIGFILE="check_typo3.cfg"
 TEMPFILE=`mktemp`
 
 SSL="FALSE"
@@ -71,7 +72,7 @@ MESSAGE_CRITICAL=""
 SEARCH_RESULT=""
 
 PROGPATH=`echo $0 | sed -e 's,[\\/][^\\/][^\\/]*$,,'`
-REVISION="1.0.0.0"
+REVISION="1.0.0.1"
 
 # USERAGENT: does not work :-(
 USERAGENT="Nagios TYPO3 Monitor $REVISION (wget)"
@@ -85,10 +86,10 @@ else
 #	exit 1
 fi
 
-if [ -r $PROGPATH/$SCRIPTNAME.cfg ]; then
-	CONFIGFILE="$PROGPATH/$SCRIPTNAME.cfg"
-elif [ -r $NAGIOS_PATH/etc/$SCRIPTNAME.cfg ]; then
-	CONFIGFILE="$NAGIOS_PATH/$SCRIPTNAME.cfg"
+if [ -r $PROGPATH/$CONFIGFILE ]; then
+	CONFIGFILE="$PROGPATH/$CONFIGFILE"
+elif [ -r $NAGIOS_PATH/etc/$CONFIGFILE ]; then
+	CONFIGFILE="$NAGIOS_PATH/$CONFIGFILE"
 else
 	echo 'Error: unable to read configuration file!'
 	exit $STATE_UNKNOWN
