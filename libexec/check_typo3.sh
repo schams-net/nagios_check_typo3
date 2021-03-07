@@ -144,7 +144,7 @@ print_usage() {
 	echo "Informative arguments:"
 	echo "  -h, --help"
 	echo "       Print detailed help screen"
-    echo
+	echo
 	echo "  -V, --version, --revision"
 	echo "       Print version information"
 	echo
@@ -155,42 +155,42 @@ print_usage() {
 	echo "       This argument is also used to determine the request to the TYPO3 server but can be"
 	echo "       overwritten by using the -r (or --resource) argument."
 	echo
-    echo "       The output of the TYPO3 Nagios extension is expected at:"
-    echo "       \"http://<fqhostname>/index.php?eID=nagios\""
+	echo "       The output of the TYPO3 Nagios extension is expected at:"
+	echo "       \"http://<fqhostname>/index.php?eID=nagios\""
 	echo
 	echo "Optional arguments:"
 	echo "  -c <configfile>, --config <configfile>"
 	echo "       Path and filename to configuration file. Default: \"$CONFIGFILE_BASENAME\","
 	echo "       located in Nagios' etc-directory."
-    echo
+	echo
 	echo "  -t <timeout>, --timeout <timeout>"
 	echo "       Timeout in seconds. Nagios check fails (return: CRITICAL) if timeout exceeded."
 	echo "       This timeout value applies to DNS lookup timeout, connect timeout and read timeout."
 	echo "       Default: $TIMEOUT"
-    echo
+	echo
 	echo "  -u <username>, --http-user <username>"
 	echo "       HTTP user name (string) for HTTP access authentication (HTTP status code: 401)"
-    echo
+	echo
 	echo "  -p <password>, --http-password <password>"
 	echo "       HTTP password (string) for HTTP access authentication (HTTP status code: 401)"
-    echo
+	echo
 	echo "  -r <uri>, --resource <uri>"
 	echo "       URI (Uniform Resource Identifier) of TYPO3 server's Nagios extension output."
 	echo "       Example: \"-r http://typo3.org/index.php?eID=nagios\""
 	echo "       Note that this argument is optional. The Nagios plugin uses --hostname (or -H) to"
 	echo "       determine the URI of the TYPO3 server. If <uri> starts with \"/\", <fqhostname> is"
 	echo "       prepended. If you use this argument, it overwrites arguments -pid and --pageid"
-    echo
+	echo
 	echo "  -I <ip-address>, --ipaddress <ip-address>"
 	echo "       IPv4 address of the TYPO3 server (e.g. \"123.45.67.89\")"
 	echo "       If this argument is used, the hostname (argument -H or --hostname) is sent as"
-    echo "       \"Host:\" in the HTTP header of the request."
-    echo
+	echo "       \"Host:\" in the HTTP header of the request."
+	echo
 	echo "  -duw <limit>, --diskusagewarning <limit>"
 	echo "       Warning level for disk usage (should be less than -duc)."
 	echo "       Value MUST have one of these units appended: k, M, G, T or P."
 	echo "       A valid value for this argument would be \"512M\" for example."
-    echo
+	echo
 	echo "  -duc <limit>, --diskusagecritical <limit>"
 	echo "       Critical level for disk usage."
 	echo "       Value MUST have one of these units appended: k, M, G, T or P."
@@ -288,9 +288,9 @@ function human_readable_to_integer {
 
 	HR_VALUE="$1"
 	HR_RESULT="ok"
-	
+
 	if [ "`echo $HR_VALUE | egrep ^[[:digit:]]+[kMGTP]$`" = "" ]; then
-    	HR_RESULT="Unkown value/format: $HR_VALUE"
+		HR_RESULT="Unkown value/format: $HR_VALUE"
 	fi
 
 	local __hrKey=${HR_VALUE: -1}
@@ -298,8 +298,8 @@ function human_readable_to_integer {
 	local __value=${HR_VALUE%?}
 
 	if [ "`echo $__value | egrep ^[[:digit:]]+$`" = "" ]; then
-    	HR_RESULT="Unkown value/format: $HR_VALUE"
-  	fi
+		HR_RESULT="Unkown value/format: $HR_VALUE"
+	fi
 
 	if [ "$HR_RESULT" = "ok" ]; then
 		case "$__hrKey" in
@@ -448,14 +448,14 @@ while test -n "$1"; do
 			if [ ! "$TEMP" = "" ]; then
 				PAGEID="$2"
 			fi
-            shift
+			shift
 		;;
 		-pid)
 			TEMP=`echo "$2" | egrep "^[0-9]{1,}$"`
 			if [ ! "$TEMP" = "" ]; then
 				PAGEID="$2"
 			fi
-            shift
+			shift
 		;;
 		-r)
 			RESOURCE="$2"
@@ -471,23 +471,23 @@ while test -n "$1"; do
 			if [ ! "$TEMP" = "" ]; then
 				DISKUSAGEWARNING="$2"
 			fi
-            shift
-        ;;
+			shift
+		;;
 		-duw)
 			TEMP=`echo "$2" | egrep "^[0-9]{1,}[kMGTP]{0,1}$"`
 			if [ ! "$TEMP" = "" ]; then
 				DISKUSAGEWARNING="$2"
 			fi
-            shift
-        ;;
+			shift
+		;;
 		--diskusagewarning)
 			TEMP=`echo "$2" | egrep "^[0-9]{1,}[kMGTP]{0,1}$"`
 			if [ ! "$TEMP" = "" ]; then
 				DISKUSAGEWARNING="$2"
 			fi
-            shift
-        ;;
-        --duc)
+			shift
+		;;
+		--duc)
 			# *DEPRECATED* please use argument -duc instead (one dash only, see --help)
 			TEMP=`echo "$2" | egrep "^[0-9]{1,}[kMGTP]{0,1}$"`
 			if [ ! "$TEMP" = "" ]; then
@@ -495,7 +495,7 @@ while test -n "$1"; do
 			fi
 			shift
 		;;
-        -duc)
+		-duc)
 			TEMP=`echo "$2" | egrep "^[0-9]{1,}[kMGTP]{0,1}$"`
 			if [ ! "$TEMP" = "" ]; then
 				DISKUSAGECRITICAL="$2"
@@ -565,7 +565,7 @@ if [ ! "$DISKUSAGEWARNING" = "" ] || [ ! "$DISKUSAGECRITICAL" = "" ]; then
 				DISKUSAGEWARNING=$HR_VALUE
 			elif [ $INDEX -eq 1 ]; then
 				DISKUSAGECRITICAL=$HR_VALUE
-			fi			
+			fi
 		fi
 	done
 
@@ -889,4 +889,3 @@ echo "TYPO3 $STATUS $MESSAGE" | sed 's/ \{1,\}/ /g'
 exit $RETURNCODE
 
 # END OF FILE
-
