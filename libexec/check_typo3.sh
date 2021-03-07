@@ -661,7 +661,7 @@ if [ -s "$CONFIGFILE" ]; then
 # In a bid to make the script more stable and sustainable, it is better to ignore the header lines.
 
 	# filter data sent by TYPO3 server (and remove unnecessary lines such as comments, etc.)
-	DATA=`egrep '^[A-Z0-9]{3,}:.{1,}' $TEMPFILE | egrep '[^ ]'`
+	DATA=`egrep '^[A-Z0-9]{3,}:.{1,}' $TEMPFILE | sed 's/\r$//' | egrep '[^ ]'`
 
 	# process data
 	for ELEMENT in $DATA; do
