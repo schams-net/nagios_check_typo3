@@ -1,3 +1,9 @@
+2021-03-22 Michael Schams <schams.net>
+
+	[CLEANUP] Make indentation consistent
+	[BUGFIX] Tolerate CRLF line terminators when parsing data
+	[TASK] Raise version to 1.0.0.5
+
 2016-09-09 Michael Schams <schams.net>
 
 	[TASK] allow extension list with and without keyword "version" between extension key and name
@@ -63,4 +69,3 @@
 
 	[TASK] lines in text files trimmed to 80 characters of length
 	[BUGFIX] typos corrected in help text (--help, see: print_usage())
-

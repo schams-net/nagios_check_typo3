@@ -23,7 +23,7 @@ Michael Schams, <https://schams.net>
 
 ## Copyright Notice:
 
-(c) 2010-2016 Michael Schams <schams.net>, all rights reserved
+(c) 2010-2021 Michael Schams <schams.net>, all rights reserved
 
 This script is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License version 2 as published by the Free Software Foundation.
 
