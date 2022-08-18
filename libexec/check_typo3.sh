@@ -67,6 +67,7 @@ CONFIGFILE="check_typo3.cfg"
 
 SSL="FALSE"
 MESSAGE_VERSION=""
+MESSAGE_UNKNOWN_EXTENSION_VERSIONS=""
 MESSAGE_WARNING=""
 MESSAGE_CRITICAL=""
 MESSAGE_UNKNOWN=""
@@ -74,7 +75,7 @@ SEARCH_RESULT=""
 STATUS=""
 
 PROGPATH=`echo $0 | sed -e 's,[\\/][^\\/][^\\/]*$,,'`
-REVISION="1.0.0.5"
+REVISION="1.0.0.5-atl"
 
 # Set default values
 FQHOSTNAME=""
@@ -93,6 +94,7 @@ SERVER_MESSAGE=""
 
 DEPRECATIONLOG_ACTION="warning"
 SERVER_MESSAGE_ACTION="show"
+UNKNOWN_EXTENSION_VERSION_ACTION="unknown"
 
 # USERAGENT: does not work :-(
 USERAGENT="Nagios TYPO3 Monitor Plugin version $REVISION (wget)"
@@ -210,6 +212,12 @@ print_usage() {
 	echo "       \"show\"      show messages if they occur (they can be useful)"
 	echo "       Default: $SERVER_MESSAGE_ACTION"
 	echo
+  echo "  --unknown-extension-version-action <action>"
+  echo "       One of the following actions, if an enabled deprecation log has been detected:"
+  echo "       \"show\"    no condition change, append Version information to message instead"
+  echo "       \"unknown\"   generate a unknown condition in Nagios"
+  echo "       Default: $UNKNOWN_EXTENSION_VERSION_ACTION"
+  echo
 	echo "Deprecated (but still supported) arguments:"
 	echo "  -pid <pageid>, --pageid <pageid>"
 	echo "       Page ID (numeric value) of TYPO3 instance with TYPO3 extension \"nagios\""
@@ -523,6 +531,13 @@ while test -n "$1"; do
 			fi
 			shift
 		;;
+		--unknown-extension-version-action)
+			TEMP=`echo "$2" | egrep "^(show|unknown)$"`
+			if [ ! "$TEMP" = "" ]; then
+				UNKNOWN_EXTENSION_VERSION_ACTION="$2"
+			fi
+			shift
+		;;
 		*)
 			echo "Unknown argument: $1"
 			print_usage
@@ -769,8 +784,13 @@ if [ -s "$CONFIGFILE" ]; then
 						STATUS="$STATUS,$SEARCH_RESULT"
 					else
 						# format of Extension version data received from TYPO3 server is incorrect/unknown
-						MESSAGE_UNKNOWN="$MESSAGE_UNKNOWN,invalid extension data ($VALUE)"
-						STATUS="$STATUS,unknown"
+            if [ "$UNKNOWN_EXTENSION_VERSION_ACTION" = "show" ]; then
+              MESSAGE_UNKNOWN_EXTENSION_VERSIONS="$MESSAGE_UNKNOWN_EXTENSION_VERSIONS,invalid extension data ($VALUE)"
+              STATUS="$STATUS,ok"
+            else
+						  MESSAGE_UNKNOWN="$MESSAGE_UNKNOWN,invalid extension data ($VALUE)"
+						  STATUS="$STATUS,unknown"
+						fi
 					fi
 				else
 					# format of Extension version data received from TYPO3 server is incorrect/unknown
@@ -880,7 +900,7 @@ if [ "$TEMP" = "" ]; then
 fi
 
 # post-process $MESSAGE
-MESSAGE="$MESSAGE_CRITICAL,$MESSAGE_WARNING,$MESSAGE_UNKNOWN"
+MESSAGE="$MESSAGE_CRITICAL,$MESSAGE_WARNING,$MESSAGE_UNKNOWN,$MESSAGE_UNKNOWN_EXTENSION_VERSIONS"
 MESSAGE=`echo "$MESSAGE" | sed 's/^[,]*//g' | sed 's/[,]*$//g' | sed 's/,\{2,\}/,/g'`
 MESSAGE="$MESSAGE $SERVER_MESSAGE"
 

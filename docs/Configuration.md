@@ -130,6 +130,19 @@ The following arguments are currently supported as command line options.
        "warning"   generate a warning condition in Nagios
        "critical"  generate a critical condition in Nagios
        Default: warning
+
+  --server-messages-action <action>
+       What should the check script do, if TYPO3 server sends an additional message in
+       the output:
+       "ignore"    do nothing and do not show messages (not recommended)
+       "show"      show messages if they occur (they can be useful)
+       Default: show
+
+  --unknown-extension-version-action <action>
+       One of the following actions, if an enabled deprecation log has been detected:
+       "show"    no condition change, append Version information to message instead
+       "unknown"   generate a unknown condition in Nagios
+       Default: unknown       
 ```
 
 **Deprecated (but still supported) arguments:**
