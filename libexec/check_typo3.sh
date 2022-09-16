@@ -47,7 +47,7 @@
 #
 # ------------------------------------------------------------------------------
 
-COMMANDS_REQUIRED="awk basename cat cut date dirname egrep grep head mktemp rm sed wget"
+COMMANDS_REQUIRED="awk basename cat cut date dirname grep head mktemp rm sed wget"
 
 # check if required commands are available and executable:
 for COMMAND in $COMMANDS_REQUIRED; do
@@ -676,7 +676,7 @@ if [ -s "$CONFIGFILE" ]; then
 				if [ "$TEMP" = "version" ]; then
 
 					VERSION=`echo "$VALUE" | sed 's/^version\-\(.*\)$/\1/'`
-					TEMP=`echo "$VERSION" | egrep '^[1-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$'`
+					TEMP=`echo "$VERSION" | egrep '^[1-9][0-9]{0,2}\.[0-9]{1,3}\.[0-9]{1,3}$'`
 					if [ "$TEMP" = "" ]; then
 
 						# alpha/beta/development version of TYPO3 server detected
@@ -716,7 +716,7 @@ if [ -s "$CONFIGFILE" ]; then
 
 					# PHP version is always MAJOR.MINOR.REVISION (xxx.yyy.zzz, e.g. "5.3.2")
 					# (additional keywords such as "ubuntu" in "5.3.2-1ubuntu4.5" are already removed by TYPO3 extension)
-					TEMP=`echo "$VERSION" | egrep '^[1-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$'`
+					TEMP=`echo "$VERSION" | egrep '^[1-9][0-9]{0,2}\.[0-9]{1,3}\.[0-9]{1,3}$'`
 					if [ ! "$TEMP" = "" ]; then
 
 						# PHP version looks pretty standard (e.g. x.yyy.zzz)
