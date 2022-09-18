@@ -15,7 +15,7 @@ chmod 755 /usr/local/nagios/libexec/check_typo3.sh
 chmod 644 /usr/local/nagios/etc/check_typo3.cfg
 ```
 
-Install and set up the [TYPO3 extension](https://typo3.org/extensions/repository/view/nagios) on the TYPO3 server(s). You will find a detailed documentation about the installation process in the [extension's manua](https://docs.typo3.org/typo3cms/extensions/nagios/).
+Install and set up the [TYPO3 extension](https://extensions.typo3.org/extension/nagios) on the TYPO3 server(s). You find a detailed information about the installation process in the [documentation](https://github.com/schams-net/nagios/tree/release/Documentation).
 
 In the next step, integrate the *TYPO3 check* in your Nagios® configuration. For example:
 

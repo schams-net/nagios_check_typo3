@@ -1,3 +1,11 @@
+2022-09-18 Michael Schams <schams.net>
+
+	[TASK] Documentation updated (missing argument "--server-messages-action" added)
+	[BUGFIX] The command "egrep" has been added to the list of required commands
+	[FEATURE] Take unknown/invalid extension versions into account (thanks to Markus Gerdes for the pull request)
+	[BUGFIX] Allow "0" as 2nd/3rd digit in version numbers (thanks to Markus Gerdes for the pull request)
+	[TASK] Raise version to 1.0.0.6
+
 2021-03-22 Michael Schams <schams.net>
 
 	[CLEANUP] Make indentation consistent
