@@ -67,6 +67,7 @@ CONFIGFILE="check_typo3.cfg"
 
 SSL="FALSE"
 MESSAGE_VERSION=""
+MESSAGE_UNKNOWN_EXTENSION_VERSIONS=""
 MESSAGE_WARNING=""
 MESSAGE_CRITICAL=""
 MESSAGE_UNKNOWN=""
@@ -93,6 +94,7 @@ SERVER_MESSAGE=""
 
 DEPRECATIONLOG_ACTION="warning"
 SERVER_MESSAGE_ACTION="show"
+UNKNOWN_EXTENSION_VERSION_ACTION="unknown"
 
 # USERAGENT: does not work :-(
 USERAGENT="Nagios TYPO3 Monitor Plugin version $REVISION (wget)"
@@ -209,6 +211,14 @@ print_usage() {
 	echo "       \"ignore\"    do nothing and do not show messages (not recommended)"
 	echo "       \"show\"      show messages if they occur (they can be useful)"
 	echo "       Default: $SERVER_MESSAGE_ACTION"
+	echo
+	echo "  --unknown-extension-version-action <action>"
+	echo "       What should the check script do, if the TYPO3 server reports an extension with"
+	echo "       an invalid version:"
+	echo "       \"ignore\"    ignore the extension do not show the extension at all (not recommended)"
+	echo "       \"show\"      do not raise a warning/error but show the version string as it is"
+	echo "       \"unknown\"   generate a unknown condition in Nagios"
+	echo "       Default: $UNKNOWN_EXTENSION_VERSION_ACTION"
 	echo
 	echo "Deprecated (but still supported) arguments:"
 	echo "  -pid <pageid>, --pageid <pageid>"
@@ -523,6 +533,13 @@ while test -n "$1"; do
 			fi
 			shift
 		;;
+		--unknown-extension-version-action)
+			TEMP=`echo "$2" | egrep "^(show|unknown)$"`
+			if [ ! "$TEMP" = "" ]; then
+				UNKNOWN_EXTENSION_VERSION_ACTION="$2"
+			fi
+			shift
+		;;
 		*)
 			echo "Unknown argument: $1"
 			print_usage
@@ -768,12 +785,19 @@ if [ -s "$CONFIGFILE" ]; then
 						fi
 						STATUS="$STATUS,$SEARCH_RESULT"
 					else
-						# format of Extension version data received from TYPO3 server is incorrect/unknown
-						MESSAGE_UNKNOWN="$MESSAGE_UNKNOWN,invalid extension data ($VALUE)"
-						STATUS="$STATUS,unknown"
+						# invalid extension version detected
+						if [ "$UNKNOWN_EXTENSION_VERSION_ACTION" = "ignore" ]; then
+							STATUS="$STATUS"
+						elif [ "$UNKNOWN_EXTENSION_VERSION_ACTION" = "show" ]; then
+							MESSAGE_UNKNOWN_EXTENSION_VERSIONS="$MESSAGE_UNKNOWN_EXTENSION_VERSIONS,invalid extension data ($VALUE)"
+							STATUS="$STATUS,ok"
+						else
+							MESSAGE_UNKNOWN="$MESSAGE_UNKNOWN,invalid extension data ($VALUE)"
+							STATUS="$STATUS,unknown"
+						fi
 					fi
 				else
-					# format of Extension version data received from TYPO3 server is incorrect/unknown
+					# invalid extension version detected
 					MESSAGE_UNKNOWN="$MESSAGE_UNKNOWN,invalid extension data ($VALUE)"
 					STATUS="$STATUS,unknown"
 				fi
@@ -880,7 +904,7 @@ if [ "$TEMP" = "" ]; then
 fi
 
 # post-process $MESSAGE
-MESSAGE="$MESSAGE_CRITICAL,$MESSAGE_WARNING,$MESSAGE_UNKNOWN"
+MESSAGE="$MESSAGE_CRITICAL,$MESSAGE_WARNING,$MESSAGE_UNKNOWN,$MESSAGE_UNKNOWN_EXTENSION_VERSIONS"
 MESSAGE=`echo "$MESSAGE" | sed 's/^[,]*//g' | sed 's/[,]*$//g' | sed 's/,\{2,\}/,/g'`
 MESSAGE="$MESSAGE $SERVER_MESSAGE"
 

@@ -130,6 +130,14 @@ The following arguments are currently supported as command line options.
        "warning"   generate a warning condition in Nagios
        "critical"  generate a critical condition in Nagios
        Default: warning
+
+  --unknown-extension-version-action <action>
+       What should the check script do, if the TYPO3 server reports an extension with
+	   an invalid version:
+       "ignore"    ignore the extension do not show the extension at all (not recommended)
+       "show"      do not raise a warning/error but show the version string as it is
+       "unknown"   generate a unknown condition in Nagios
+       Default: unknown
 ```
 
 **Deprecated (but still supported) arguments:**
