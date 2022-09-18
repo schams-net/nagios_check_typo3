@@ -47,7 +47,7 @@
 #
 # ------------------------------------------------------------------------------
 
-COMMANDS_REQUIRED="awk basename cat cut date dirname grep head mktemp rm sed wget"
+COMMANDS_REQUIRED="awk basename cat cut date dirname egrep grep head mktemp rm sed wget"
 
 # check if required commands are available and executable:
 for COMMAND in $COMMANDS_REQUIRED; do
