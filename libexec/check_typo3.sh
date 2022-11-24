@@ -67,6 +67,7 @@ CONFIGFILE="check_typo3.cfg"
 
 SSL="FALSE"
 MESSAGE_VERSION=""
+MESSAGE_PHP_VERSION=""
 MESSAGE_UNKNOWN_EXTENSION_VERSIONS=""
 MESSAGE_WARNING=""
 MESSAGE_CRITICAL=""
@@ -95,6 +96,7 @@ SERVER_MESSAGE=""
 DEPRECATIONLOG_ACTION="warning"
 SERVER_MESSAGE_ACTION="show"
 UNKNOWN_EXTENSION_VERSION_ACTION="unknown"
+PHP_MESSAGE_ACTION="hide"
 
 # USERAGENT: does not work :-(
 USERAGENT="Nagios TYPO3 Monitor Plugin version $REVISION (wget)"
@@ -139,6 +141,9 @@ print_usage() {
 	echo "       [ -t <timeout> ] [ -u <username>] [ -p <password> ] [ -r <uri> ] [ -I <ip-address> ]"
 	echo "       [ -duw <limit> ] [ -duc <limit> ]"
 	echo "       [ --deprecationlog-action ignore|warning|critical ]"
+	echo "       [ --server-messages-action ignore|show ]"
+	echo "       [ --unknown-extension-version-action ignore|show|unknown ]"
+	echo "       [ --php-message-action hide|show ]"
 	echo
 	echo "  $SCRIPTNAME --help"
 	echo "  $SCRIPTNAME --version"
@@ -219,6 +224,12 @@ print_usage() {
 	echo "       \"show\"      do not raise a warning/error but show the version string as it is"
 	echo "       \"unknown\"   generate a unknown condition in Nagios"
 	echo "       Default: $UNKNOWN_EXTENSION_VERSION_ACTION"
+	echo
+	echo "  --php-message-action <action>"
+	echo "       Should the PHP Version be appended in the status message:"
+	echo "       \"show\"    ignore the extension do not show the extension at all (not recommended)"
+	echo "       \"hide\"     do not raise a warning/error but show the version string as it is"
+	echo "       Default: $PHP_MESSAGE_ACTION"
 	echo
 	echo "Deprecated (but still supported) arguments:"
 	echo "  -pid <pageid>, --pageid <pageid>"
@@ -540,6 +551,13 @@ while test -n "$1"; do
 			fi
 			shift
 		;;
+		--php-message-action)
+			TEMP=`echo "$2" | egrep "^(show|hide)$"`
+			if [ ! "$TEMP" = "" ]; then
+				PHP_MESSAGE_ACTION="$2"
+			fi
+			shift
+		;;
 		*)
 			echo "Unknown argument: $1"
 			print_usage
@@ -750,6 +768,9 @@ if [ -s "$CONFIGFILE" ]; then
 						MESSAGE_UNKNOWN="$MESSAGE_UNKNOWN,invalid PHP version reported by TYPO3 instance"
 						STATUS="$STATUS,unknown"
 					fi
+					if [ "$UNKNOWN_EXTENSION_VERSION_ACTION" = "show" ]; then
+					  MESSAGE_PHP_VERSION="PHP $VERSION"
+          fi
 				else
 					# format of PHP version data received from TYPO3 server is incorrect/unknown
 					MESSAGE_UNKNOWN="$MESSAGE_UNKNOWN,invalid PHP version reported by TYPO3 instance"
@@ -904,7 +925,7 @@ if [ "$TEMP" = "" ]; then
 fi
 
 # post-process $MESSAGE
-MESSAGE="$MESSAGE_CRITICAL,$MESSAGE_WARNING,$MESSAGE_UNKNOWN,$MESSAGE_UNKNOWN_EXTENSION_VERSIONS"
+MESSAGE="$MESSAGE_PHP_VERSION,$MESSAGE_CRITICAL,$MESSAGE_WARNING,$MESSAGE_UNKNOWN,$MESSAGE_UNKNOWN_EXTENSION_VERSIONS"
 MESSAGE=`echo "$MESSAGE" | sed 's/^[,]*//g' | sed 's/[,]*$//g' | sed 's/,\{2,\}/,/g'`
 MESSAGE="$MESSAGE $SERVER_MESSAGE"
 
