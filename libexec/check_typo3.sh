@@ -5,8 +5,8 @@
 # TYPO3 server and a configuration file of course.
 #
 # Read the full documentation at: https://schams.net/nagios
-# TYPO3 Extension Repository: http://typo3.org/extensions/repository
-# Nagios: http://nagios.org/
+# TYPO3 Extension Repository: https://extensions.typo3.org/extension/nagios
+# Nagios: https://www.nagios.org/
 #
 # (c) 2010-2022 Michael Schams <schams.net>
 # All rights reserved
@@ -16,7 +16,7 @@
 # published by the Free Software Foundation.
 #
 # The GNU General Public License can be found at
-# http://www.gnu.org/copyleft/gpl.html
+# https://www.gnu.org/licenses/gpl.html
 #
 # This script is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
