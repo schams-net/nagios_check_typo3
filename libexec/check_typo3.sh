@@ -227,8 +227,8 @@ print_usage() {
 	echo
 	echo "  --php-message-action <action>"
 	echo "       Should the PHP Version be appended in the status message:"
-	echo "       \"show\"    ignore the extension do not show the extension at all (not recommended)"
-	echo "       \"hide\"     do not raise a warning/error but show the version string as it is"
+	echo "       \"show\"      show the PHP version that the TYPO3 instance uses"
+	echo "       \"hide\"      do not show the PHP version that the TYPO3 instance uses"
 	echo "       Default: $PHP_MESSAGE_ACTION"
 	echo
 	echo "Deprecated (but still supported) arguments:"
