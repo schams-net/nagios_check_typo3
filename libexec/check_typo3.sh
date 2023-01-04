@@ -909,8 +909,12 @@ for SINGLE_STATUS in $TEMP; do
 	esac
 done
 
+STATUS_MESSAGE="$STATUS" # default
 if [ "$STATUS" = "OK" ]; then
-	STATUS="$MESSAGE_VERSION OK"
+	STATUS_MESSAGE="$MESSAGE_VERSION OK"
+	if [ ! "$MESSAGE_PHP_VERSION" = "" ]; then
+		STATUS_MESSAGE="$STATUS_MESSAGE ($MESSAGE_PHP_VERSION)"
+	fi
 fi
 
 # no keywords such as "TYPO3", "PHP", "EXT", etc. found
@@ -926,12 +930,12 @@ if [ "$TEMP" = "" ]; then
 fi
 
 # post-process $MESSAGE
-MESSAGE="$MESSAGE_PHP_VERSION,$MESSAGE_CRITICAL,$MESSAGE_WARNING,$MESSAGE_UNKNOWN,$MESSAGE_UNKNOWN_EXTENSION_VERSIONS"
+MESSAGE="$MESSAGE_CRITICAL,$MESSAGE_WARNING,$MESSAGE_UNKNOWN,$MESSAGE_UNKNOWN_EXTENSION_VERSIONS"
 MESSAGE=`echo "$MESSAGE" | sed 's/^[,]*//g' | sed 's/[,]*$//g' | sed 's/,\{2,\}/,/g'`
 MESSAGE="$MESSAGE $SERVER_MESSAGE"
 
 # Pass further explanations to Nagios and exit with approriate returncode
-echo "TYPO3 $STATUS $MESSAGE" | sed 's/ \{1,\}/ /g'
+echo "TYPO3 $STATUS_MESSAGE $MESSAGE" | sed 's/ \{1,\}/ /g'
 exit $RETURNCODE
 
 # END OF FILE
