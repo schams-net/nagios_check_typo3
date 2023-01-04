@@ -768,9 +768,10 @@ if [ -s "$CONFIGFILE" ]; then
 						MESSAGE_UNKNOWN="$MESSAGE_UNKNOWN,invalid PHP version reported by TYPO3 instance"
 						STATUS="$STATUS,unknown"
 					fi
-					if [ "$UNKNOWN_EXTENSION_VERSION_ACTION" = "show" ]; then
-					  MESSAGE_PHP_VERSION="PHP $VERSION"
-          fi
+                    # add the PHP version to the output (e.g. "TYPO3 11.5.20 OK (PHP 7.4.33)")
+					if [ "$PHP_MESSAGE_ACTION" = "show" ]; then
+						MESSAGE_PHP_VERSION="PHP $VERSION"
+					fi
 				else
 					# format of PHP version data received from TYPO3 server is incorrect/unknown
 					MESSAGE_UNKNOWN="$MESSAGE_UNKNOWN,invalid PHP version reported by TYPO3 instance"
