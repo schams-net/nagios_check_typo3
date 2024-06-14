@@ -144,6 +144,18 @@ The following arguments are currently supported as command line options.
        "show"      do not raise a warning/error but show the version string as it is
        "unknown"   generate a unknown condition in Nagios
        Default: unknown
+
+  --php-message-action <action>
+       Should the PHP Version be appended in the status message:
+       "show"      show the PHP version that the TYPO3 instance uses
+       "hide"      do not show the PHP version that the TYPO3 instance uses
+       default: hide
+
+  --ssl <action>
+       Use SSL (https)
+       "true"       use https
+       "false"      use http
+       Default: $SSL           
 ```
 
 **Deprecated (but still supported) arguments:**
