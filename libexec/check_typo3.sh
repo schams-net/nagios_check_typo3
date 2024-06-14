@@ -65,7 +65,7 @@ NAGIOS_PATH="/usr/lib/nagios"
 SCRIPTNAME=`basename $0`
 CONFIGFILE="check_typo3.cfg"
 
-SSL="FALSE"
+SSL="false"
 MESSAGE_VERSION=""
 MESSAGE_PHP_VERSION=""
 MESSAGE_UNKNOWN_EXTENSION_VERSIONS=""
@@ -231,6 +231,12 @@ print_usage() {
 	echo "       \"hide\"      do not show the PHP version that the TYPO3 instance uses"
 	echo "       Default: $PHP_MESSAGE_ACTION"
 	echo
+	echo " --ssl <action>"
+	echo "       Use SSL (https)"
+	echo "      \"true\"       use https"
+	echo "      \"false\"      use http"
+	echo "      Default: $SSL"
+	echo 
 	echo "Deprecated (but still supported) arguments:"
 	echo "  -pid <pageid>, --pageid <pageid>"
 	echo "       Page ID (numeric value) of TYPO3 instance with TYPO3 extension \"nagios\""
@@ -558,6 +564,13 @@ while test -n "$1"; do
 			fi
 			shift
 		;;
+		--ssl)
+			TEMP=`echo "$2" | egrep "^(false|true)$"`
+			 if [ ! "$TEMP" = "" ]; then
+                SSL="$2"
+            fi
+			shift
+		;;
 		*)
 			echo "Unknown argument: $1"
 			print_usage
@@ -574,7 +587,7 @@ if [ "$TEMP" = "" ]; then
 fi
 
 # check if SSL should be used (NOT IMPLEMENTED YET)
-if [ $SSL = "TRUE" ]; then
+if [ $SSL = "true" ]; then
 	WGET_ARGUMENTS="--no-check-certificate --server-response"
 	HTTPMETHOD="https"
 fi
