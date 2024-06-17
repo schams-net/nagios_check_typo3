@@ -65,7 +65,6 @@ NAGIOS_PATH="/usr/lib/nagios"
 SCRIPTNAME=`basename $0`
 CONFIGFILE="check_typo3.cfg"
 
-SSL="false"
 MESSAGE_VERSION=""
 MESSAGE_PHP_VERSION=""
 MESSAGE_UNKNOWN_EXTENSION_VERSIONS=""
@@ -85,7 +84,7 @@ TIMEOUT="5"
 WGET_ARGUMENTS=""
 HTTPUSER=""
 HTTPPASSWORD=""
-HTTPMETHOD="http"
+METHOD="http"
 RESOURCE=""
 PAGEID=""
 
@@ -231,12 +230,12 @@ print_usage() {
 	echo "       \"hide\"      do not show the PHP version that the TYPO3 instance uses"
 	echo "       Default: $PHP_MESSAGE_ACTION"
 	echo
-	echo " --ssl <action>"
-	echo "       Use SSL (https)"
-	echo "      \"true\"       use https"
-	echo "      \"false\"      use http"
-	echo "      Default: $SSL"
-	echo 
+	echo "  --method <method>"
+	echo "       Use SSL/TLS (https) when accessing the TYPO3 instance:"
+	echo "       \"http\"      use HTTP"
+	echo "       \"https\"     use HTTPS"
+	echo "       Default: $METHOD"
+	echo
 	echo "Deprecated (but still supported) arguments:"
 	echo "  -pid <pageid>, --pageid <pageid>"
 	echo "       Page ID (numeric value) of TYPO3 instance with TYPO3 extension \"nagios\""
@@ -564,10 +563,10 @@ while test -n "$1"; do
 			fi
 			shift
 		;;
-		--ssl)
-			TEMP=`echo "$2" | egrep "^(false|true)$"`
-			 if [ ! "$TEMP" = "" ]; then
-                SSL="$2"
+		--method)
+			TEMP=`echo "$2" | egrep "^(http|https)$"`
+			if [ ! "$TEMP" = "" ]; then
+                METHOD="$2"
             fi
 			shift
 		;;
@@ -586,10 +585,11 @@ if [ "$TEMP" = "" ]; then
 	exit $STATE_CRITICAL
 fi
 
-# check if SSL should be used (NOT IMPLEMENTED YET)
-if [ $SSL = "true" ]; then
-	WGET_ARGUMENTS="--no-check-certificate --server-response"
-	HTTPMETHOD="https"
+# check which HTTP method should be used (HTTP or HTTPS)
+if [ $METHOD != "https" ]; then
+	METHOD="http"
+else
+	WGET_ARGUMENTS="--no-check-certificate"
 fi
 
 # set custom user agent (NOT IMPLEMENTED YET)
@@ -650,16 +650,16 @@ fi
 TEMP=`echo "$RESOURCE" | egrep "^\/.*"`
 if [ ! "$TEMP" = "" ]; then
 	if [ ! "$IPADDRESS" = "" ]; then
-		WGET_RESOURCE="$HTTPMETHOD://$IPADDRESS$RESOURCE"
+		WGET_RESOURCE="$METHOD://$IPADDRESS$RESOURCE"
 		#WGET_ARGUMENTS="$WGET_ARGUMENTS --header=\"Host: $FQHOSTNAME\""
 		WGET_ARGUMENTS="$WGET_ARGUMENTS --header=Host:$FQHOSTNAME"
 	else
-		WGET_RESOURCE="$HTTPMETHOD://$FQHOSTNAME$RESOURCE"
+		WGET_RESOURCE="$METHOD://$FQHOSTNAME$RESOURCE"
 	fi
 else
-	TEMP=`echo "$RESOURCE" | egrep "^http:\/\/.*"`
+	TEMP=`echo "$RESOURCE" | egrep "^https?:\/\/.*"`
 	if [ ! "$TEMP" = "" ]; then
-		# if <resource> starts with "http://", omit <fqhostname> in wget request
+		# if <resource> starts with "http://" or "https://", omit <fqhostname> in wget request
 		WGET_RESOURCE="$RESOURCE"
 	else
 		echo "Error: invalid parameters, check configuration"
