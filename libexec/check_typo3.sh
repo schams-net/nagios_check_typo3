@@ -87,6 +87,7 @@ HTTPPASSWORD=""
 METHOD="http"
 RESOURCE=""
 PAGEID=""
+NO_CHECK_CERTIFICATE="false"
 
 DISKUSAGEWARNING=""
 DISKUSAGECRITICAL=""
@@ -143,6 +144,8 @@ print_usage() {
 	echo "       [ --server-messages-action ignore|show ]"
 	echo "       [ --unknown-extension-version-action ignore|show|unknown ]"
 	echo "       [ --php-message-action hide|show ]"
+	echo "       [ --method http|https ]"
+	echo "       [ --no-check-certificate false|true ]"
 	echo
 	echo "  $SCRIPTNAME --help"
 	echo "  $SCRIPTNAME --version"
@@ -235,6 +238,13 @@ print_usage() {
 	echo "       \"http\"      use HTTP"
 	echo "       \"https\"     use HTTPS"
 	echo "       Default: $METHOD"
+	echo
+	echo "  --no-check-certificate <action>"
+	echo "       Suppress server certificate checks. This option is only relevant if the option --method"
+	echo "       is set to \"https\". Leave this option as \"false\" unless you know what you're doing."
+	echo "       \"false\"     check the certificate"
+	echo "       \"true\"      do not check the certificate (insecure)"
+	echo "       Default: $NO_CHECK_CERTIFICATE"
 	echo
 	echo "Deprecated (but still supported) arguments:"
 	echo "  -pid <pageid>, --pageid <pageid>"
@@ -566,8 +576,15 @@ while test -n "$1"; do
 		--method)
 			TEMP=`echo "$2" | egrep "^(http|https)$"`
 			if [ ! "$TEMP" = "" ]; then
-                METHOD="$2"
-            fi
+				METHOD="$2"
+			fi
+			shift
+		;;
+		--no-check-certificate)
+			TEMP=`echo "$2" | egrep "^(true|false)$"`
+			if [ ! "$TEMP" = "" ]; then
+				NO_CHECK_CERTIFICATE="$2"
+			fi
 			shift
 		;;
 		*)
@@ -589,7 +606,9 @@ fi
 if [ $METHOD != "https" ]; then
 	METHOD="http"
 else
-	WGET_ARGUMENTS="--no-check-certificate"
+	if [ $NO_CHECK_CERTIFICATE = "true" ]; then
+		WGET_ARGUMENTS="$WGET_ARGUMENTS --no-check-certificate"
+	fi
 fi
 
 # set custom user agent (NOT IMPLEMENTED YET)
