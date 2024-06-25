@@ -1,3 +1,8 @@
+2024-06-26 Michael Schams <schams.net>
+
+	[FEATURE] Implement option to use SSL/TLS (thanks to Markus Gerdes for the initial pull request)
+	[TASK] Raise version to 1.0.0.8
+
 2023-01-04 Michael Schams <schams.net>
 
 	[FEATURE] Show PHP version in status message (thanks to Markus Gerdes for the initial pull request)

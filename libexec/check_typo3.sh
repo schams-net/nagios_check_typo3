@@ -8,7 +8,7 @@
 # TYPO3 Extension Repository: https://extensions.typo3.org/extension/nagios
 # Nagios: https://www.nagios.org/
 #
-# (c) 2010-2023 Michael Schams <schams.net>
+# (c) 2010-2024 Michael Schams <schams.net>
 # All rights reserved
 #
 # This script is free software; you can redistribute it and/or modify
@@ -28,8 +28,8 @@
 # Please see TYPO3 and Nagios licenses.
 #
 # ------------------------------------------------------------------------------
-# Revision 1.0.0.7 (see variable REVISION below)
-# Date: 04/Jan/2023
+# Revision 1.0.0.8 (see variable REVISION below)
+# Date: 25/Jun/2024
 #
 # This version supports the following checks:
 #   - PHP version
@@ -75,7 +75,7 @@ SEARCH_RESULT=""
 STATUS=""
 
 PROGPATH=`echo $0 | sed -e 's,[\\/][^\\/][^\\/]*$,,'`
-REVISION="1.0.0.7"
+REVISION="1.0.0.8"
 
 # Set default values
 FQHOSTNAME=""

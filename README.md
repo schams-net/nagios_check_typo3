@@ -8,7 +8,7 @@ Depending to the configuration (the plugin and Nagios® itself), Nagios® detect
 
 In short words: this plugin in combination with the [TYPO3 extension](https://extensions.typo3.org/extension/nagios) allows system administrators/managers to detect things such as outdated/insecure TYPO3 extensions, outdated/insecure TYPO3 core installations, incompatible PHP versions, etc.
 
-Read the full documentation at: <https://schams.net/nagios>
+Read more at: <https://schams.net/nagios>
 
 
 ## Documentation
@@ -18,12 +18,12 @@ Please see folder `docs/`.
 
 ## Author
 
-Michael Schams, <https://schams.net>
+Michael Schams | [schams.net](https://schams.net)
 
 
 ## Copyright Notice:
 
-(c) 2010-2023 Michael Schams <schams.net>, all rights reserved
+(c) 2010-2024 Michael Schams <schams.net>, all rights reserved
 
 This script is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License version 2 as published by the Free Software Foundation.
 
