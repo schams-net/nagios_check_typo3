@@ -139,11 +139,24 @@ The following arguments are currently supported as command line options.
 
   --unknown-extension-version-action <action>
        What should the check script do, if the TYPO3 server reports an extension with
-	   an invalid version:
+       an invalid version:
        "ignore"    ignore the extension do not show the extension at all (not recommended)
        "show"      do not raise a warning/error but show the version string as it is
        "unknown"   generate a unknown condition in Nagios
        Default: unknown
+
+  --method <method>
+       Use SSL/TLS (https) when accessing the TYPO3 instance:
+       "http"      use http
+       "https"     use https
+       Default: http
+
+  --no-check-certificate <action>
+       Suppress server certificate checks. This option is only relevant if the option `--method`
+       is set to "https". Leave this option as "false" unless you know what you're doing.
+       "false"     check the certificate
+       "true"      do not check the certificate (insecure)
+       Default: false
 ```
 
 **Deprecated (but still supported) arguments:**

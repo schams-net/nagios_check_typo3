@@ -65,7 +65,6 @@ NAGIOS_PATH="/usr/lib/nagios"
 SCRIPTNAME=`basename $0`
 CONFIGFILE="check_typo3.cfg"
 
-SSL="FALSE"
 MESSAGE_VERSION=""
 MESSAGE_PHP_VERSION=""
 MESSAGE_UNKNOWN_EXTENSION_VERSIONS=""
@@ -85,9 +84,10 @@ TIMEOUT="5"
 WGET_ARGUMENTS=""
 HTTPUSER=""
 HTTPPASSWORD=""
-HTTPMETHOD="http"
+METHOD="http"
 RESOURCE=""
 PAGEID=""
+NO_CHECK_CERTIFICATE="false"
 
 DISKUSAGEWARNING=""
 DISKUSAGECRITICAL=""
@@ -144,6 +144,8 @@ print_usage() {
 	echo "       [ --server-messages-action ignore|show ]"
 	echo "       [ --unknown-extension-version-action ignore|show|unknown ]"
 	echo "       [ --php-message-action hide|show ]"
+	echo "       [ --method http|https ]"
+	echo "       [ --no-check-certificate false|true ]"
 	echo
 	echo "  $SCRIPTNAME --help"
 	echo "  $SCRIPTNAME --version"
@@ -230,6 +232,19 @@ print_usage() {
 	echo "       \"show\"      show the PHP version that the TYPO3 instance uses"
 	echo "       \"hide\"      do not show the PHP version that the TYPO3 instance uses"
 	echo "       Default: $PHP_MESSAGE_ACTION"
+	echo
+	echo "  --method <method>"
+	echo "       Use SSL/TLS (https) when accessing the TYPO3 instance:"
+	echo "       \"http\"      use HTTP"
+	echo "       \"https\"     use HTTPS"
+	echo "       Default: $METHOD"
+	echo
+	echo "  --no-check-certificate <action>"
+	echo "       Suppress server certificate checks. This option is only relevant if the option --method"
+	echo "       is set to \"https\". Leave this option as \"false\" unless you know what you're doing."
+	echo "       \"false\"     check the certificate"
+	echo "       \"true\"      do not check the certificate (insecure)"
+	echo "       Default: $NO_CHECK_CERTIFICATE"
 	echo
 	echo "Deprecated (but still supported) arguments:"
 	echo "  -pid <pageid>, --pageid <pageid>"
@@ -558,6 +573,20 @@ while test -n "$1"; do
 			fi
 			shift
 		;;
+		--method)
+			TEMP=`echo "$2" | egrep "^(http|https)$"`
+			if [ ! "$TEMP" = "" ]; then
+				METHOD="$2"
+			fi
+			shift
+		;;
+		--no-check-certificate)
+			TEMP=`echo "$2" | egrep "^(true|false)$"`
+			if [ ! "$TEMP" = "" ]; then
+				NO_CHECK_CERTIFICATE="$2"
+			fi
+			shift
+		;;
 		*)
 			echo "Unknown argument: $1"
 			print_usage
@@ -573,10 +602,13 @@ if [ "$TEMP" = "" ]; then
 	exit $STATE_CRITICAL
 fi
 
-# check if SSL should be used (NOT IMPLEMENTED YET)
-if [ $SSL = "TRUE" ]; then
-	WGET_ARGUMENTS="--no-check-certificate --server-response"
-	HTTPMETHOD="https"
+# check which HTTP method should be used (HTTP or HTTPS)
+if [ $METHOD != "https" ]; then
+	METHOD="http"
+else
+	if [ $NO_CHECK_CERTIFICATE = "true" ]; then
+		WGET_ARGUMENTS="$WGET_ARGUMENTS --no-check-certificate"
+	fi
 fi
 
 # set custom user agent (NOT IMPLEMENTED YET)
@@ -637,16 +669,16 @@ fi
 TEMP=`echo "$RESOURCE" | egrep "^\/.*"`
 if [ ! "$TEMP" = "" ]; then
 	if [ ! "$IPADDRESS" = "" ]; then
-		WGET_RESOURCE="$HTTPMETHOD://$IPADDRESS$RESOURCE"
+		WGET_RESOURCE="$METHOD://$IPADDRESS$RESOURCE"
 		#WGET_ARGUMENTS="$WGET_ARGUMENTS --header=\"Host: $FQHOSTNAME\""
 		WGET_ARGUMENTS="$WGET_ARGUMENTS --header=Host:$FQHOSTNAME"
 	else
-		WGET_RESOURCE="$HTTPMETHOD://$FQHOSTNAME$RESOURCE"
+		WGET_RESOURCE="$METHOD://$FQHOSTNAME$RESOURCE"
 	fi
 else
-	TEMP=`echo "$RESOURCE" | egrep "^http:\/\/.*"`
+	TEMP=`echo "$RESOURCE" | egrep "^https?:\/\/.*"`
 	if [ ! "$TEMP" = "" ]; then
-		# if <resource> starts with "http://", omit <fqhostname> in wget request
+		# if <resource> starts with "http://" or "https://", omit <fqhostname> in wget request
 		WGET_RESOURCE="$RESOURCE"
 	else
 		echo "Error: invalid parameters, check configuration"
