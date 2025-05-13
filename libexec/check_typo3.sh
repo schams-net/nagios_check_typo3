@@ -560,7 +560,7 @@ while test -n "$1"; do
 			shift
 		;;
 		--unknown-extension-version-action)
-			TEMP=`echo "$2" | egrep "^(show|unknown)$"`
+			TEMP=`echo "$2" | egrep "^(ignore|show|unknown)$"`
 			if [ ! "$TEMP" = "" ]; then
 				UNKNOWN_EXTENSION_VERSION_ACTION="$2"
 			fi
