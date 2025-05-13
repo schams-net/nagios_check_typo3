@@ -1,3 +1,9 @@
+2025-05-13 Michael Schams <schams.net>
+
+	[BUGFIX] Fix parameter validation (thanks to a2yp for providing the patch and submitting the pull request)
+	[TASK] Optimize help text
+	[TASK] Raise version to 1.0.0.9
+
 2024-06-26 Michael Schams <schams.net>
 
 	[FEATURE] Implement option to use SSL/TLS (thanks to Markus Gerdes for the initial pull request)
