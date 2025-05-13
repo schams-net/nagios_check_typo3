@@ -221,8 +221,8 @@ print_usage() {
 	echo
 	echo "  --unknown-extension-version-action <action>"
 	echo "       What should the check script do, if the TYPO3 server reports an extension with"
-	echo "       an invalid version:"
-	echo "       \"ignore\"    ignore the extension do not show the extension at all (not recommended)"
+	echo "       an invalid version string:"
+	echo "       \"ignore\"    ignore and do not show the extension at all (not recommended)"
 	echo "       \"show\"      do not raise a warning/error but show the version string as it is"
 	echo "       \"unknown\"   generate a unknown condition in Nagios"
 	echo "       Default: $UNKNOWN_EXTENSION_VERSION_ACTION"
